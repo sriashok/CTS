@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chamundi Township Welfare & Development Association</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    :root {
+      --primary: #002551;          /* Dark Navy */
+      --primary-light: #1a3d6e;
+      --primary-dark: #001a3a;
+      --bg: #002551;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --border: #e2e8f0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .app { max-width: 1200px; margin: 0 auto; padding: 16px; }
+    header {
+      background: linear-gradient(135deg, #002551, #001a3a);
+      color: white;
+      padding: 18px 22px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .header-logo {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 2px solid white;
+    }
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .header-text { text-align: center; }
+    header h1 { font-size: 1.3rem; font-weight: 600; line-height: 1.3; margin: 0; }
+    header .kannada { font-size: 1rem; margin-top: 4px; opacity: 0.95; font-weight: 700; }
+    header .address { font-size: 0.75rem; opacity: 0.8; margin-top: 6px; }
+    .header-right {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .role-badge {
+      background: rgba(255,255,255,0.2);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      padding: 10px 18px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+      overflow-x: auto;
+    }
+    table { width: 100%; border-collapse: collapse; min-width: 600px; }
+    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    th { background: #f8fafc; font-weight: 600; font-size: 0.8rem; color: var(--muted); }
+    .status {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .status.paid { background: #dcfce7; color: var(--success); }
+    .status.pending { background: #fef3c7; color: var(--warning); }
+    .status.overdue { background: #fee2e2; color: var(--danger); }
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 7px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    button.secondary { background: #e2e8f0; color: var(--text); }
+    button.wa { background: #25D366; }
+    button.danger { background: #dc2626; }
+    button:hover { opacity: 0.9; }
+    .login-box {
+      max-width: 420px;
+      margin: 60px auto;
+      text-align: center;
+    }
+    .login-box h2 { margin-bottom: 6px; font-size: 1.4rem; }
+    .login-box p { color: var(--muted); margin-bottom: 20px; font-size: 0.95rem; }
+    .role-buttons { display: flex; flex-direction: column; gap: 12px; }
+    .role-buttons button { padding: 14px; font-size: 1rem; }
+    input, select {
+      width: 100%;
+      padding: 9px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .summary-item {
+      background: white;
+      padding: 14px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .summary-item .value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .summary-item .label { font-size: 0.8rem; color: var(--muted); }
+    .actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .note {
+      background: #eef2ff;
+      border-left: 4px solid var(--primary);
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      margin-bottom: 16px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px;
+    }
+    .badge-role {
+      background: #dbeafe;
+      color: #1e40af;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+    }
+    .members-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .member-card {
+      background: transparent;
+      height: 280px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+    .member-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+    .member-card.flipped .member-card-inner {
+      transform: rotateY(180deg);
+    }
+    .member-card-front, .member-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      background: white;
+    }
+    .member-card-back {
+      transform: rotateY(180deg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .member-card .site-no {
+      background: var(--primary);
+      color: white;
+      padding: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-align: center;
+    }
+    .member-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background: #e2e8f0;
+    }
+    .member-card .info { padding: 10px; text-align: center; }
+    .member-card .name { font-weight: 600; margin-bottom: 4px; }
+    .member-card .role { font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }
+    .member-card .phone { font-size: 0.85rem; color: var(--primary); }
+    .tenant-status { font-size: 0.8rem; margin-top: 8px; }
+    .tenant-status .filled { color: var(--success); }
+    .tenant-status .empty { color: var(--danger); }
+    .view-toggle { display: flex; gap: 6px; }
+    .view-toggle button.active { background: var(--primary); color: white; }
+    .search-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+    .search-bar input { flex: 1; margin-bottom: 0; }
+    .sheet-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+    .sheet-tab {
+      padding: 8px 14px;
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sheet-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .sheet-tab .shuffle-btns { display: flex; gap: 2px; }
+    .sheet-tab .shuffle-btns button {
+      padding: 2px 6px;
+      font-size: 0.7rem;
+      background: rgba(255,255,255,0.3);
+      color: inherit;
+    }
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 360px;
+      text-align: center;
+    }
+    .modal h3 { margin-bottom: 12px; }
+    .modal p { color: var(--muted); margin-bottom: 16px; font-size: 0.9rem; }
+    .modal input { margin-bottom: 16px; }
+    .modal-actions { display: flex; gap: 8px; justify-content: center; }
+    .consolidated-table th { text-align: right; }
+    .consolidated-table td:not(:first-child) { text-align: right; }
+    @media (max-width: 768px) {
+      header { padding: 60px 16px 18px; }
+      .header-logo { position: static; transform: none; margin-bottom: 8px; }
+      .header-right { position: static; transform: none; margin-top: 10px; }
+      header h1 { font-size: 1.05rem; }
+      .members-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useMemo, useEffect } = React;
+
+    const TOWNSHIP_NAME = "Chamundi Township Welfare & Development Association";
+    const APPS_SCRIPT_URL = ""; // Paste your Google Apps Script Web App URL here
+
+    async function apiGet(action) {
+      if (!APPS_SCRIPT_URL) return null;
+      const res = await fetch(`${APPS_SCRIPT_URL}?action=${action}`);
+      return res.json();
+    }
+    async function apiPost(action, payload) {
+      if (!APPS_SCRIPT_URL) return null;
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ action, ...payload })
+      });
+      return res.json();
+    }
+
+    const MOCK_MEMBERS = [
+      { id: 1, site: "17", name: "Pruthvi Shri", phone: "9448528286", email: "", role: "Member", photo: "", access: "user" },
+      { id: 2, site: "66", name: "Ashwini N.", phone: "", email: "", role: "Member", photo: "", access: "user" },
+      { id: 3, site: "58", name: "Nanjundan K.", phone: "9901426698", email: "", role: "Member", photo: "", access: "user" },
+      { id: 4, site: "61", name: "Venkatesh Gowda", phone: "9731872737", email: "", role: "Member", photo: "", access: "user" },
+      { id: 5, site: "64", name: "Balakrishna K N.", phone: "9242196376", email: "", role: "Member", photo: "", access: "user" },
+      { id: 6, site: "65", name: "Varun", phone: "9886445848", email: "", role: "Member", photo: "", access: "user" },
+      { id: 7, site: "66", name: "Nagaraju P. (cheluvegowdru)", phone: "9880118078", email: "", role: "Member", photo: "", access: "user" },
+      { id: 8, site: "90", name: "Suresh S N.", phone: "9482277651", email: "", role: "Member", photo: "", access: "user" },
+      { id: 9, site: "91", name: "Raghanvan", phone: "9379167737", email: "", role: "Member", photo: "", access: "user" },
+      { id: 10, site: "95", name: "Kumaraswamy N.", phone: "7760631680", email: "", role: "Member", photo: "", access: "user" },
+      { id: 11, site: "96", name: "Sandya", phone: "9845400054", email: "", role: "Member", photo: "", access: "user" },
+      { id: 12, site: "99", name: "Ramappa A M.", phone: "9448573714", email: "", role: "Member", photo: "", access: "user" },
+      { id: 13, site: "112", name: "Prasad R.S", phone: "9886768624", email: "", role: "Member", photo: "", access: "user" },
+      { id: 14, site: "119", name: "Phanishankar K", phone: "9980029494", email: "", role: "Member", photo: "", access: "user" },
+      { id: 15, site: "122", name: "Savitha Nagendra", phone: "7022314561", email: "", role: "Member", photo: "", access: "user" },
+      { id: 16, site: "123", name: "Ananth Padmanabha", phone: "9845536842", email: "", role: "Member", photo: "", access: "user" },
+      { id: 17, site: "124", name: "Gopal Kolya", phone: "9900664449", email: "", role: "Member", photo: "", access: "user" },
+      { id: 18, site: "128", name: "Rajashekar", phone: "", email: "", role: "Member", photo: "", access: "user" },
+      { id: 19, site: "130", name: "Punith Kumar", phone: "9164800188", email: "", role: "Member", photo: "", access: "user" },
+      { id: 20, site: "159", name: "Ganapath Rao", phone: "9486529831", email: "", role: "Member", photo: "", access: "user" },
+      { id: 21, site: "193", name: "Harish M", phone: "9148976997", email: "", role: "Member", photo: "", access: "user" },
+      { id: 22, site: "194", name: "Chandrashekar M", phone: "9448057130", email: "", role: "Member", photo: "", access: "user" },
+      { id: 23, site: "197", name: "Muruli Mohan", phone: "9902045993", email: "", role: "Member", photo: "", access: "user" },
+      { id: 24, site: "198", name: "Vrushabendra Swamy K S.", phone: "9743787565", email: "", role: "Member", photo: "", access: "user" },
+      { id: 25, site: "207", name: "Shobha Shekar", phone: "9611829691", email: "", role: "Member", photo: "", access: "user" },
+      { id: 26, site: "249", name: "Shreyas Naveen", phone: "9742507189", email: "", role: "Member", photo: "", access: "user" },
+      { id: 27, site: "263", name: "Srinivas Sheshadri", phone: "9886218112", email: "", role: "Member", photo: "", access: "user" },
+      { id: 28, site: "279", name: "Zaheer", phone: "7411238344", email: "", role: "Member", photo: "", access: "user" },
+      { id: 29, site: "281", name: "Linga Murthy T.", phone: "9448788091", email: "", role: "Member", photo: "", access: "user" },
+      { id: 30, site: "282", name: "Shri.Gopinath", phone: "", email: "", role: "Member", photo: "", access: "user" },
+      { id: 31, site: "283", name: "Veerendra", phone: "", email: "", role: "Member", photo: "", access: "user" },
+      { id: 32, site: "288", name: "Mahabalappa C", phone: "9448788490", email: "", role: "Member", photo: "", access: "user" },
+      { id: 33, site: "289", name: "Thirthappa C.", phone: "8550010091", email: "", role: "Member", photo: "", access: "user" },
+      { id: 34, site: "313", name: "Ganesh CS.", phone: "9986525226", email: "", role: "Member", photo: "", access: "user" },
+      { id: 35, site: "314", name: "Srikanth H R.", phone: "", email: "", role: "Member", photo: "", access: "user" },
+      { id: 36, site: "315", name: "Nagendra Srikanta", phone: "9886560501", email: "", role: "Member", photo: "", access: "user" },
+      { id: 37, site: "320", name: "Gopinath N", phone: "9880715532", email: "", role: "Member", photo: "", access: "user" },
+      { id: 38, site: "331", name: "Swamy M B.", phone: "9008528590", email: "", role: "Member", photo: "", access: "user" },
+      { id: 39, site: "335", name: "Ravi M P.", phone: "9448795672", email: "", role: "Member", photo: "", access: "user" },
+      { id: 40, site: "341", name: "Venkatesh N K.", phone: "9945693581", email: "", role: "Member", photo: "", access: "user" },
+      { id: 41, site: "369", name: "Sharath", phone: "9886770544", email: "", role: "Member", photo: "", access: "user" },
+      { id: 42, site: "370", name: "Ashok S.", phone: "9686667171", email: "", role: "Member", photo: "", access: "user" },
+    ];
+
+    const MOCK_DUES = [
+      { id: 1, flat: "17", month: "Oct 2026", amount: 4500, status: "Paid", paidOn: "2026-10-05" },
+      { id: 2, flat: "17", month: "Sep 2026", amount: 4500, status: "Paid", paidOn: "2026-09-04" },
+      { id: 3, flat: "58", month: "Oct 2026", amount: 4500, status: "Pending", paidOn: "" },
+      { id: 4, flat: "61", month: "Sep 2026", amount: 4500, status: "Paid", paidOn: "2026-09-10" },
+      { id: 5, flat: "64", month: "Oct 2026", amount: 4500, status: "Overdue", paidOn: "" },
+      { id: 6, flat: "65", month: "Sep 2026", amount: 4500, status: "Overdue", paidOn: "" },
+      { id: 7, flat: "90", month: "Oct 2026", amount: 4500, status: "Paid", paidOn: "2026-10-08" },
+      { id: 8, flat: "91", month: "Oct 2026", amount: 4500, status: "Pending", paidOn: "" },
+      { id: 9, flat: "95", month: "Oct 2026", amount: 4500, status: "Paid", paidOn: "2026-10-12" },
+      { id: 10, flat: "96", month: "Sep 2026", amount: 4500, status: "Paid", paidOn: "2026-09-15" },
+    ];
+
+    // Multiple payment sheets
+    const ALL_MEMBERS_FOR_SHEETS = MOCK_MEMBERS.map(m => ({
+      site: m.site,
+      name: m.name,
+      paid: 0,
+      pending: 0,
+      overdue: 0,
+      collected: 0,
+      due: 0
+    }));
+
+    const INITIAL_SHEETS = [
+      {
+        id: 1,
+        name: "Oct 2026 Summary",
+        data: ALL_MEMBERS_FOR_SHEETS
+      }
+    ];
+
+    function App() {
+      const [role, setRole] = useState(null);
+      const [currentUser, setCurrentUser] = useState(null);
+      const [tab, setTab] = useState("directory");
+      const [members, setMembers] = useState(MOCK_MEMBERS);
+      const [loading, setLoading] = useState(!!APPS_SCRIPT_URL);
+
+      useEffect(() => {
+        if (!APPS_SCRIPT_URL) return;
+        apiGet("members").then(data => {
+          if (data && data.length) setMembers(data);
+          setLoading(false);
+        }).catch(() => setLoading(false));
+      }, []);
+
+      useEffect(() => {
+        if (!APPS_SCRIPT_URL || loading) return;
+        apiPost("saveMembers", { rows: members });
+      }, [members]);
+      const [dues, setDues] = useState(MOCK_DUES);
+      const [sheets, setSheets] = useState(INITIAL_SHEETS);
+      const [activeSheetId, setActiveSheetId] = useState(1);
+      const [showAddMember, setShowAddMember] = useState(false);
+      const [newMember, setNewMember] = useState({ site: "", name: "", phone: "", email: "", role: "Member", photo: "" });
+      const [selectedFlat, setSelectedFlat] = useState("all");
+      const [viewMode, setViewMode] = useState("photo");
+      const [search, setSearch] = useState("");
+      const [flippedCards, setFlippedCards] = useState({});
+      const [loginSite, setLoginSite] = useState("");
+      const [loginPassword, setLoginPassword] = useState("");
+      const [loginError, setLoginError] = useState("");
+      const [newSheetName, setNewSheetName] = useState("");
+      const [editingSheetName, setEditingSheetName] = useState("");
+      const [deleteConfirm, setDeleteConfirm] = useState(null);
+      const [editingSheetId, setEditingSheetId] = useState(null);
+      const [selectedMemberSite, setSelectedMemberSite] = useState(null);
+      const [eventSheets, setEventSheets] = useState([
+        { id: 1, name: "Diwali 2026", data: [
+          { site: "17", name: "Pruthvi Shri", amount: 2000, status: "Paid" },
+          { site: "58", name: "Nanjundan K.", amount: 2000, status: "Pending" }
+        ]}
+      ]);
+      const [activeEventSheetId, setActiveEventSheetId] = useState(1);
+      const [newEventSheetName, setNewEventSheetName] = useState("");
+      const [eventFolders, setEventFolders] = useState([
+        { id: 1, name: "Diwali 2026", photos: [] },
+        { id: 2, name: "Independence Day", photos: [] }
+      ]);
+      const [selectedFolderId, setSelectedFolderId] = useState(1);
+      const [newFolderName, setNewFolderName] = useState("");
+      const [showAddFolder, setShowAddFolder] = useState(false);
+      const [eventsSubTab, setEventsSubTab] = useState("collections");
+      const [editingEventSheetId, setEditingEventSheetId] = useState(null);
+
+      const isAdmin = role === "admin";
+
+      const loginAs = (selectedRole, user = null) => {
+        setRole(selectedRole);
+        setCurrentUser(user);
+        setTab(selectedRole === "admin" ? "payments" : "directory");
+      };
+
+      const logout = () => {
+        setRole(null);
+        setCurrentUser(null);
+        setSearch("");
+        setLoginSite("");
+        setLoginPassword("");
+        setLoginError("");
+      };
+
+      const addMember = () => {
+        if (!newMember.site || !newMember.name) return;
+        const photo = newMember.photo || `https://i.pravatar.cc/300?u=${encodeURIComponent(newMember.name)}`;
+        setMembers([...members, { ...newMember, id: Date.now(), photo }]);
+        setNewMember({ site: "", name: "", phone: "", email: "", role: "Member", photo: "" });
+        setShowAddMember(false);
+      };
+
+      const markPaid = (id) => {
+        setDues(dues.map(d => d.id === id ? { ...d, status: "Paid", paidOn: new Date().toISOString().slice(0, 10) } : d));
+      };
+
+      const sendWhatsAppReminder = (flat, phone, status, month, amount) => {
+        const message = status === "Paid"
+          ? `Dear Resident of ${flat},\\n\\nThis is a confirmation from *${TOWNSHIP_NAME}* that your maintenance dues of ₹${amount} for ${month} have been received. Thank you!\\n\\n- Chamundi Township Management`
+          : `Dear Resident of ${flat},\\n\\nThis is a gentle reminder from *${TOWNSHIP_NAME}* regarding your pending maintenance dues of ₹${amount} for ${month}.\\n\\nKindly clear the dues at the earliest.\\n\\n- Chamundi Township Management`;
+        const cleanPhone = phone.replace(/\\D/g, "");
+        const waLink = `https://wa.me/91${cleanPhone}?text=${encodeURIComponent(message)}`;
+        window.open(waLink, "_blank");
+      };
+
+      const addSheet = () => {
+        if (!newSheetName.trim()) return;
+        const newSheet = {
+          id: Date.now(),
+          name: newSheetName.trim(),
+          data: ALL_MEMBERS_FOR_SHEETS.map(m => ({ ...m }))
+        };
+        setSheets([...sheets, newSheet]);
+        setActiveSheetId(newSheet.id);
+        setNewSheetName("");
+      };
+
+      const duplicateSheet = (id) => {
+        const source = sheets.find(s => s.id === id);
+        if (!source) return;
+        const newSheet = {
+          id: Date.now(),
+          name: source.name + " (Copy)",
+          data: source.data.map(row => ({ ...row }))
+        };
+        setSheets([...sheets, newSheet]);
+        setActiveSheetId(newSheet.id);
+      };
+
+      const requestDeleteSheet = (id) => {
+        if (sheets.length <= 1) return alert("At least one sheet must remain.");
+        setDeleteConfirm({ type: "sheet", id, password: "" });
+      };
+
+      const requestDeleteRow = (sheetId, rowIndex) => {
+        setDeleteConfirm({ type: "row", id: sheetId, index: rowIndex, password: "" });
+      };
+
+      const confirmDelete = () => {
+        // For now password can be blank — later validate against real password
+        if (!deleteConfirm) return;
+        if (deleteConfirm.type === "sheet") {
+          const remaining = sheets.filter(s => s.id !== deleteConfirm.id);
+          setSheets(remaining);
+          if (activeSheetId === deleteConfirm.id) setActiveSheetId(remaining[0].id);
+        } else if (deleteConfirm.type === "row") {
+          setSheets(sheets.map(s => {
+            if (s.id !== deleteConfirm.id) return s;
+            return { ...s, data: s.data.filter((_, i) => i !== deleteConfirm.index) };
+          }));
+        }
+        setDeleteConfirm(null);
+      };
+
+      const viewMemberPayments = (site) => {
+        setSelectedMemberSite(site);
+        setTab("payments");
+        // Optionally switch to a sheet that has this member
+      };
+
+      const clearMemberFilter = () => setSelectedMemberSite(null);
+
+      const shuffleSheet = (id, direction) => {
+        const index = sheets.findIndex(s => s.id === id);
+        if (index === -1) return;
+        const newIndex = direction === "up" ? index - 1 : index + 1;
+        if (newIndex < 0 || newIndex >= sheets.length) return;
+        const newSheets = [...sheets];
+        [newSheets[index], newSheets[newIndex]] = [newSheets[newIndex], newSheets[index]];
+        setSheets(newSheets);
+      };
+
+      const renameSheet = (id, name) => {
+        if (!name.trim()) return;
+        setSheets(sheets.map(s => s.id === id ? { ...s, name: name.trim() } : s));
+        setEditingSheetName("");
+      };
+
+      const updateCell = (sheetId, rowIndex, field, value) => {
+        setSheets(sheets.map(s => {
+          if (s.id !== sheetId) return s;
+          const newData = [...s.data];
+          newData[rowIndex] = { ...newData[rowIndex], [field]: field === "site" || field === "name" ? value : Number(value) || 0 };
+          return { ...s, data: newData };
+        }));
+      };
+
+      const addRow = (sheetId) => {
+        setSheets(sheets.map(s => {
+          if (s.id !== sheetId) return s;
+          return { ...s, data: [...s.data, { site: "", name: "", paid: 0, pending: 0, overdue: 0, collected: 0, due: 0 }] };
+        }));
+      };
+
+      const filteredMembers = useMemo(() => {
+        if (!search.trim()) return members;
+        const q = search.toLowerCase();
+        return members.filter(m =>
+          m.name.toLowerCase().includes(q) ||
+          m.phone.includes(q) ||
+          m.site.toLowerCase().includes(q)
+        );
+      }, [members, search]);
+
+      const activeSheet = sheets.find(s => s.id === activeSheetId) || sheets[0];
+
+      const myDues = role === "resident" && currentUser
+        ? dues.filter(d => d.flat === currentUser.site)
+        : (selectedFlat === "all" ? dues : dues.filter(d => d.flat === selectedFlat));
+
+      const uniqueFlats = [...new Set(dues.map(d => d.flat))];
+
+      if (loading) {
+        return (
+          <div className="login-box">
+            <div className="card">
+              <h2>Loading...</h2>
+              <p>Connecting to Google Sheets</p>
+            </div>
+          </div>
+        );
+      }
+
+      const handleLogin = () => {
+        setLoginError("");
+        if (loginSite.toLowerCase() === "admin" && loginPassword === "Admin@123") {
+          loginAs("admin");
+          return;
+        }
+        const member = members.find(m => m.site === loginSite.trim());
+        if (!member) {
+          setLoginError("Site number not found");
+          return;
+        }
+        if (member.password && member.password !== loginPassword) {
+          setLoginError("Incorrect password");
+          return;
+        }
+        if (!member.password && loginPassword) {
+          setLoginError("No password set for this member yet");
+          return;
+        }
+        loginAs(member.access === "admin" ? "admin" : "resident", member);
+      };
+
+      if (!role) {
+        return (
+          <div className="login-box">
+            <div className="card" style={{ textAlign: "center" }}>
+              <img src="Logo.png" alt="Chamundi Township" style={{ width: 90, height: 90, marginBottom: 12 }} />
+              <h2>Chamundi Township</h2>
+              <div className="kannada" style={{ fontWeight: 700, marginBottom: 4 }}>ಚಾಮುಂಡಿ ಟೌನ್‌ಶಿಪ್ ಕ್ಷೇಮಾಭಿವೃದ್ಧಿ ಸಂಘ</div>
+              <p style={{ marginBottom: 20 }}>Community Portal</p>
+              <input
+                placeholder="Site Number or Admin"
+                value={loginSite}
+                onChange={e => setLoginSite(e.target.value)}
+                style={{ marginBottom: 10 }}
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={loginPassword}
+                onChange={e => setLoginPassword(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleLogin()}
+                style={{ marginBottom: 12 }}
+              />
+              {loginError && <p style={{ color: "var(--danger)", fontSize: "0.85rem", marginBottom: 10 }}>{loginError}</p>}
+              <button onClick={handleLogin} style={{ width: "100%", padding: "12px" }}>Login</button>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="app">
+          <header>
+            <div className="header-logo">
+              <div className="logo">
+                <img src="Logo.png" alt="Chamundi Township Logo" style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: "50%" }} />
+              </div>
+            </div>
+            <div className="header-text">
+              <h1>Chamundi Township Welfare & Development Association</h1>
+              <div className="kannada">ಚಾಮುಂಡಿ ಟೌನ್‌ಶಿಪ್ ಕ್ಷೇಮಾಭಿವೃದ್ಧಿ ಸಂಘ</div>
+              <div className="address">Survey No. 45, Near Chamundi Hills, Mysuru, Karnataka - 570010</div>
+            </div>
+            <div className="header-right">
+              <span className="role-badge">{isAdmin ? "Admin" : "Member"}</span>
+              <button className="secondary" onClick={logout}>Logout</button>
+            </div>
+          </header>
+
+          <div className="tabs">
+            <div className={`tab ${tab === "directory" ? "active" : ""}`} onClick={() => setTab("directory")}>
+              Members Directory
+            </div>
+            <div className={`tab ${tab === "payments" ? "active" : ""}`} onClick={() => setTab("payments")}>
+              Consolidated Payments
+            </div>
+            <div className={`tab ${tab === "dues" ? "active" : ""}`} onClick={() => setTab("dues")}>
+              {isAdmin ? "Dues & History" : "My Dues & History"}
+            </div>
+            <div className={`tab ${tab === "events" ? "active" : ""}`} onClick={() => setTab("events")}>
+              Events
+            </div>
+            {isAdmin && (
+              <div className={`tab ${tab === "access" ? "active" : ""}`} onClick={() => setTab("access")}>
+                Access Management
+              </div>
+            )}
+          </div>
+
+          {tab === "directory" && (
+            <div className="card">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+                <h3>Members Directory</h3>
+                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                  <div className="view-toggle">
+                    <button className={viewMode === "photo" ? "active" : "secondary"} onClick={() => setViewMode("photo")}>Photo View</button>
+                    <button className={viewMode === "list" ? "active" : "secondary"} onClick={() => setViewMode("list")}>List View</button>
+                  </div>
+                  {isAdmin && (
+                    <button onClick={() => setShowAddMember(!showAddMember)}>
+                      {showAddMember ? "Cancel" : "+ Add Member"}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="search-bar">
+                <input
+                  placeholder="Search by name, phone or site no..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
+                {search && <button className="secondary" onClick={() => setSearch("")}>Clear</button>}
+              </div>
+
+              {showAddMember && isAdmin && (
+                <div style={{ background: "#f8fafc", padding: 16, borderRadius: 8, marginBottom: 16 }}>
+                  <div className="form-grid">
+                    <input placeholder="Site / Flat / House No *" value={newMember.site} onChange={e => setNewMember({...newMember, site: e.target.value})} />
+                    <input placeholder="Full Name *" value={newMember.name} onChange={e => setNewMember({...newMember, name: e.target.value})} />
+                    <input placeholder="Phone" value={newMember.phone} onChange={e => setNewMember({...newMember, phone: e.target.value})} />
+                    <input placeholder="Email" value={newMember.email} onChange={e => setNewMember({...newMember, email: e.target.value})} />
+                    <input placeholder="Photo URL (optional)" value={newMember.photo} onChange={e => setNewMember({...newMember, photo: e.target.value})} />
+                  </div>
+                  <select value={newMember.role} onChange={e => setNewMember({...newMember, role: e.target.value})} style={{ marginTop: 8, maxWidth: 220 }}>
+                    <option>President</option>
+                    <option>Vice President</option>
+                    <option>Secretary</option>
+                    <option>Treasurer</option>
+                    <option>Member</option>
+                  </select>
+                  <div className="actions">
+                    <button onClick={addMember}>Save Member</button>
+                  </div>
+                </div>
+              )}
+
+              {filteredMembers.length === 0 ? (
+                <p style={{ textAlign: "center", color: "var(--muted)", padding: 30 }}>No members found</p>
+              ) : viewMode === "photo" ? (
+                <div className="members-grid">
+                  {filteredMembers.map(m => {
+                    const isFlipped = flippedCards[m.id];
+                    const tenants = m.tenants || [
+                      { floor: "Ground", status: "Owner" },
+                      { floor: "1st", status: "Rented" },
+                      { floor: "2nd", status: "Empty" },
+                      { floor: "3rd", status: "Rented" }
+                    ];
+                    return (
+                      <div
+                        key={m.id}
+                        className={`member-card ${isFlipped ? "flipped" : ""}`}
+                        onClick={() => setFlippedCards(prev => ({ ...prev, [m.id]: !prev[m.id] }))}
+                      >
+                        <div className="member-card-inner">
+                          <div className="member-card-front">
+                            <div className="site-no">{m.site}</div>
+                            <img src={m.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}&background=002551&color=fff&size=300`} alt={m.name} />
+                            <div className="info">
+                              <div className="name">{m.name}</div>
+                              <div className="role"><span className="badge-role">{m.role}</span></div>
+                            </div>
+                          </div>
+                          <div className="member-card-back">
+                            <div style={{ fontWeight: 600, marginBottom: 8 }}>{m.name}</div>
+                            <div style={{ fontSize: "0.9rem", marginBottom: 4 }}>Site: <strong>{m.site}</strong></div>
+                            <div style={{ fontSize: "0.9rem", marginBottom: 8 }}>Phone: {m.phone || "—"}</div>
+                            <div style={{ fontSize: "0.8rem", fontWeight: 600, marginBottom: 4 }}>Tenant Status</div>
+                            <div className="tenant-status">
+                              {tenants.map((t, i) => (
+                                <div key={i} className={t.status === "Empty" ? "empty" : "filled"}>
+                                  {t.floor}: {t.status}
+                                </div>
+                              ))}
+                            </div>
+                            <button
+                              className="secondary"
+                              style={{ marginTop: 10, fontSize: "0.8rem" }}
+                              onClick={e => { e.stopPropagation(); viewMemberPayments(m.site); }}
+                            >View Payments</button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Site No</th>
+                      <th>Name</th>
+                      <th>Role</th>
+                      <th>Phone</th>
+                      <th>Email</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredMembers.map(m => (
+                      <tr key={m.id} style={{ cursor: "pointer" }} onClick={() => viewMemberPayments(m.site)}>
+                        <td><strong>{m.site}</strong></td>
+                        <td style={{ color: "var(--primary)", textDecoration: "underline" }}>{m.name}</td>
+                        <td><span className="badge-role">{m.role}</span></td>
+                        <td>{m.phone}</td>
+                        <td>{m.email || "-"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
+
+          {tab === "payments" && (
+            <div className="card">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+                <h3>Consolidated Payments</h3>
+                {isAdmin && (
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <input
+                      placeholder="New sheet name"
+                      value={newSheetName}
+                      onChange={e => setNewSheetName(e.target.value)}
+                      style={{ width: 180, marginBottom: 0 }}
+                    />
+                    <button onClick={addSheet}>+ Add Sheet</button>
+                  </div>
+                )}
+              </div>
+
+              <div className="sheet-tabs">
+                {sheets.map((s, index) => (
+                  <div
+                    key={s.id}
+                    className={`sheet-tab ${activeSheetId === s.id ? "active" : ""}`}
+                    onClick={() => setActiveSheetId(s.id)}
+                  >
+                    {isAdmin && (
+                      <div className="shuffle-btns" onClick={e => e.stopPropagation()}>
+                        <button onClick={() => shuffleSheet(s.id, "up")} disabled={index === 0}>↑</button>
+                        <button onClick={() => shuffleSheet(s.id, "down")} disabled={index === sheets.length - 1}>↓</button>
+                      </div>
+                    )}
+                    {editingSheetName === s.id && isAdmin ? (
+                      <input
+                        autoFocus
+                        defaultValue={s.name}
+                        onBlur={e => renameSheet(s.id, e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && renameSheet(s.id, e.target.value)}
+                        style={{ width: 100, margin: 0, padding: "2px 6px" }}
+                        onClick={e => e.stopPropagation()}
+                      />
+                    ) : (
+                      <span onDoubleClick={() => isAdmin && setEditingSheetName(s.id)}>{s.name}</span>
+                    )}
+                    {isAdmin && (
+                      <button
+                        className="secondary"
+                        style={{ marginLeft: 6, padding: "2px 8px", fontSize: "0.75rem" }}
+                        onClick={e => { e.stopPropagation(); duplicateSheet(s.id); }}
+                        title="Duplicate this sheet"
+                      >Copy</button>
+                    )}
+                    {isAdmin && sheets.length > 1 && (
+                      <span
+                        style={{ marginLeft: 6, color: "#fca5a5", cursor: "pointer" }}
+                        onClick={e => { e.stopPropagation(); requestDeleteSheet(s.id); }}
+                      >×</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {activeSheet && (
+                <>
+                  {selectedMemberSite && (
+                    <div style={{ background: "#eff6ff", padding: "10px 14px", borderRadius: 8, marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span>Showing payments for <strong>{selectedMemberSite}</strong></span>
+                      <button className="secondary" onClick={clearMemberFilter}>Show All</button>
+                    </div>
+                  )}
+
+                  {isAdmin && (
+                    <div style={{ marginBottom: 12, display: "flex", gap: 8, alignItems: "center" }}>
+                      {editingSheetId === activeSheet.id ? (
+                        <button onClick={() => setEditingSheetId(null)}>Done Editing</button>
+                      ) : (
+                        <button onClick={() => setEditingSheetId(activeSheet.id)}>Edit Sheet</button>
+                      )}
+                      <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+                        {editingSheetId === activeSheet.id ? "Editing mode on — click Done when finished" : "View mode"}
+                      </span>
+                    </div>
+                  )}
+
+                  <table className="consolidated-table">
+                    <thead>
+                      <tr>
+                        <th style={{ textAlign: "left" }}>S.No</th>
+                        <th style={{ textAlign: "left" }}>Site</th>
+                        <th style={{ textAlign: "left" }}>Name</th>
+                        <th>Paid</th>
+                        <th>Pending</th>
+                        <th>Overdue</th>
+                        <th>Collected (₹)</th>
+                        <th>Due (₹)</th>
+                        {isAdmin && editingSheetId === activeSheet.id && <th></th>}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {activeSheet.data.map((row, idx) => {
+                        if (selectedMemberSite && row.site !== selectedMemberSite) return null;
+                        const isEditing = isAdmin && editingSheetId === activeSheet.id;
+                        return (
+                          <tr key={idx}>
+                            <td style={{ textAlign: "left" }}>{idx + 1}</td>
+                            <td style={{ textAlign: "left" }}>
+                              {isEditing ? (
+                                <input value={row.site} onChange={e => updateCell(activeSheet.id, idx, "site", e.target.value)} style={{ margin: 0 }} />
+                              ) : <strong>{row.site}</strong>}
+                            </td>
+                            <td style={{ textAlign: "left" }}>
+                              {isEditing ? (
+                                <input value={row.name} onChange={e => updateCell(activeSheet.id, idx, "name", e.target.value)} style={{ margin: 0 }} />
+                              ) : row.name}
+                            </td>
+                            <td>
+                              {isEditing ? (
+                                <input type="number" value={row.paid} onChange={e => updateCell(activeSheet.id, idx, "paid", e.target.value)} style={{ margin: 0, width: 70 }} />
+                              ) : row.paid}
+                            </td>
+                            <td>
+                              {isEditing ? (
+                                <input type="number" value={row.pending} onChange={e => updateCell(activeSheet.id, idx, "pending", e.target.value)} style={{ margin: 0, width: 70 }} />
+                              ) : row.pending}
+                            </td>
+                            <td>
+                              {isEditing ? (
+                                <input type="number" value={row.overdue} onChange={e => updateCell(activeSheet.id, idx, "overdue", e.target.value)} style={{ margin: 0, width: 70 }} />
+                              ) : row.overdue}
+                            </td>
+                            <td>
+                              {isEditing ? (
+                                <input type="number" value={row.collected} onChange={e => updateCell(activeSheet.id, idx, "collected", e.target.value)} style={{ margin: 0, width: 90 }} />
+                              ) : `₹${row.collected.toLocaleString()}`}
+                            </td>
+                            <td style={{ color: row.due > 0 ? "var(--danger)" : "inherit" }}>
+                              {isEditing ? (
+                                <input type="number" value={row.due} onChange={e => updateCell(activeSheet.id, idx, "due", e.target.value)} style={{ margin: 0, width: 90 }} />
+                              ) : `₹${row.due.toLocaleString()}`}
+                            </td>
+                            {isEditing && (
+                              <td>
+                                <button className="danger" onClick={() => requestDeleteRow(activeSheet.id, idx)}>×</button>
+                              </td>
+                            )}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  {isAdmin && editingSheetId === activeSheet.id && (
+                    <div className="actions">
+                      <button onClick={() => addRow(activeSheet.id)}>+ Add Row</button>
+                    </div>
+                  )}
+                </>
+              )}
+
+              <div className="note" style={{ marginTop: 16 }}>
+                {isAdmin
+                  ? "Admin: Click “Edit Sheet” to modify data, add/delete rows. Click “Done Editing” when finished. You can also shuffle, rename, and delete sheets."
+                  : "View only. Contact Admin to make changes to payment sheets."}
+              </div>
+            </div>
+          )}
+
+          {tab === "dues" && (
+            <>
+              <div className="card">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
+                  <h3>{isAdmin ? "Maintenance Dues & History" : "My Dues & History"}</h3>
+                  {isAdmin && (
+                    <select value={selectedFlat} onChange={e => setSelectedFlat(e.target.value)} style={{ width: "auto", minWidth: 140 }}>
+                      <option value="all">All Sites</option>
+                      {uniqueFlats.map(f => <option key={f} value={f}>{f}</option>)}
+                    </select>
+                  )}
+                </div>
+
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Site</th>
+                      <th>Month</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Paid On</th>
+                      {isAdmin && <th>Actions</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {myDues.map(d => {
+                      const member = members.find(m => m.site === d.flat);
+                      return (
+                        <tr key={d.id}>
+                          <td><strong>{d.flat}</strong></td>
+                          <td>{d.month}</td>
+                          <td>₹{d.amount.toLocaleString()}</td>
+                          <td>
+                            <span className={`status ${d.status.toLowerCase()}`}>
+                              {d.status}
+                            </span>
+                          </td>
+                          <td>{d.paidOn || "-"}</td>
+                          {isAdmin && (
+                            <td>
+                              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                                {d.status !== "Paid" && (
+                                  <button onClick={() => markPaid(d.id)}>Mark Paid</button>
+                                )}
+                                {member && (
+                                  <button className="wa" onClick={() => sendWhatsAppReminder(d.flat, member.phone, d.status, d.month, d.amount)}>
+                                    WhatsApp
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="note">
+                <strong>WhatsApp Reminder:</strong> Clicking the WhatsApp button opens WhatsApp with a pre-filled soft reminder or payment confirmation message.
+              </div>
+            </>
+          )}
+
+          {tab === "events" && (
+            <div>
+              <div className="tabs" style={{ marginBottom: 16 }}>
+                <div className={`tab ${eventsSubTab === "collections" ? "active" : ""}`} onClick={() => setEventsSubTab("collections")}>
+                  Event Collections
+                </div>
+                <div className={`tab ${eventsSubTab === "photos" ? "active" : ""}`} onClick={() => setEventsSubTab("photos")}>
+                  Event Photos
+                </div>
+              </div>
+
+              {eventsSubTab === "collections" && (
+                <div className="card">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+                    <h3>Event Collections</h3>
+                    {isAdmin && (
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <input
+                          placeholder="Event name"
+                          value={newEventSheetName}
+                          onChange={e => setNewEventSheetName(e.target.value)}
+                          style={{ width: 160, marginBottom: 0 }}
+                        />
+                        <button onClick={() => {
+                          if (!newEventSheetName.trim()) return;
+                          const newId = Date.now();
+                          setEventSheets([...eventSheets, { id: newId, name: newEventSheetName.trim(), data: [{ site: "", name: "", amount: 0, status: "Pending" }] }]);
+                          setActiveEventSheetId(newId);
+                          setNewEventSheetName("");
+                        }}>+ Add Event Sheet</button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="sheet-tabs">
+                    {eventSheets.map(s => (
+                      <div
+                        key={s.id}
+                        className={`sheet-tab ${activeEventSheetId === s.id ? "active" : ""}`}
+                        onClick={() => setActiveEventSheetId(s.id)}
+                      >
+                        {s.name}
+                        {isAdmin && eventSheets.length > 1 && (
+                          <span style={{ marginLeft: 8, color: "#fca5a5", cursor: "pointer" }} onClick={e => {
+                            e.stopPropagation();
+                            if (confirm("Delete this event sheet?")) {
+                              const rem = eventSheets.filter(es => es.id !== s.id);
+                              setEventSheets(rem);
+                              if (activeEventSheetId === s.id) setActiveEventSheetId(rem[0].id);
+                            }
+                          }}>×</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {(() => {
+                    const sheet = eventSheets.find(s => s.id === activeEventSheetId);
+                    if (!sheet) return null;
+                    const isEditing = isAdmin && editingEventSheetId === sheet.id;
+                    return (
+                      <>
+                        {isAdmin && (
+                          <div style={{ marginBottom: 12, display: "flex", gap: 8, alignItems: "center" }}>
+                            {isEditing ? (
+                              <button onClick={() => setEditingEventSheetId(null)}>Done Editing</button>
+                            ) : (
+                              <button onClick={() => setEditingEventSheetId(sheet.id)}>Edit Sheet</button>
+                            )}
+                            <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+                              {isEditing ? "Editing mode — update collected funds" : "View mode"}
+                            </span>
+                          </div>
+                        )}
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>S.No</th>
+                              <th>Site</th>
+                              <th>Name</th>
+                              <th>Amount</th>
+                              {isEditing && <th></th>}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {sheet.data.map((row, idx) => (
+                              <tr key={idx}>
+                                <td>{idx + 1}</td>
+                                <td>{isEditing ? <input value={row.site} onChange={e => {
+                                  const newSheets = eventSheets.map(es => es.id === sheet.id ? { ...es, data: es.data.map((r, i) => i === idx ? { ...r, site: e.target.value } : r) } : es);
+                                  setEventSheets(newSheets);
+                                }} style={{ margin: 0 }} /> : <strong>{row.site}</strong>}</td>
+                                <td>{isEditing ? <input value={row.name} onChange={e => {
+                                  const newSheets = eventSheets.map(es => es.id === sheet.id ? { ...es, data: es.data.map((r, i) => i === idx ? { ...r, name: e.target.value } : r) } : es);
+                                  setEventSheets(newSheets);
+                                }} style={{ margin: 0 }} /> : row.name}</td>
+                                <td>{isEditing ? <input type="number" value={row.amount} onChange={e => {
+                                  const newSheets = eventSheets.map(es => es.id === sheet.id ? { ...es, data: es.data.map((r, i) => i === idx ? { ...r, amount: Number(e.target.value) || 0 } : r) } : es);
+                                  setEventSheets(newSheets);
+                                }} style={{ margin: 0, width: 100 }} /> : `₹${row.amount}`}</td>
+                                {isEditing && <td><button className="danger" onClick={() => {
+                                  const newSheets = eventSheets.map(es => es.id === sheet.id ? { ...es, data: es.data.filter((_, i) => i !== idx) } : es);
+                                  setEventSheets(newSheets);
+                                }}>×</button></td>}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        {isEditing && (
+                          <div className="actions">
+                            <button onClick={() => {
+                              setEventSheets(eventSheets.map(es => es.id === sheet.id ? { ...es, data: [...es.data, { site: "", name: "", amount: 0, status: "Pending" }] } : es));
+                            }}>+ Add Row</button>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {eventsSubTab === "photos" && (
+                <div className="card">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
+                    <h3>Event Photos</h3>
+                    {isAdmin && (
+                      <button onClick={() => setShowAddFolder(!showAddFolder)}>
+                        {showAddFolder ? "Cancel" : "+ Add Folder"}
+                      </button>
+                    )}
+                  </div>
+
+                  {isAdmin && showAddFolder && (
+                    <div style={{ background: "#f8fafc", padding: 16, borderRadius: 8, marginBottom: 16 }}>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <input
+                          placeholder="Folder / Event Name *"
+                          value={newFolderName}
+                          onChange={e => setNewFolderName(e.target.value)}
+                          style={{ flex: 1, marginBottom: 0 }}
+                        />
+                        <button onClick={() => {
+                          if (!newFolderName.trim()) return;
+                          const newId = Date.now();
+                          setEventFolders([...eventFolders, { id: newId, name: newFolderName.trim(), photos: [] }]);
+                          setSelectedFolderId(newId);
+                          setNewFolderName("");
+                          setShowAddFolder(false);
+                        }}>Create Folder</button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="sheet-tabs" style={{ marginBottom: 16 }}>
+                    {eventFolders.map(f => (
+                      <div
+                        key={f.id}
+                        className={`sheet-tab ${selectedFolderId === f.id ? "active" : ""}`}
+                        onClick={() => setSelectedFolderId(f.id)}
+                      >
+                        {f.name}
+                        {isAdmin && eventFolders.length > 1 && (
+                          <span style={{ marginLeft: 8, color: "#fca5a5", cursor: "pointer" }} onClick={e => {
+                            e.stopPropagation();
+                            if (confirm("Delete this folder and all its photos?")) {
+                              const rem = eventFolders.filter(ef => ef.id !== f.id);
+                              setEventFolders(rem);
+                              if (selectedFolderId === f.id) setSelectedFolderId(rem[0].id);
+                            }
+                          }}>×</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {(() => {
+                    const folder = eventFolders.find(f => f.id === selectedFolderId);
+                    if (!folder) return <p style={{ color: "var(--muted)" }}>Select or create a folder</p>;
+                    return (
+                      <>
+                        {isAdmin && (
+                          <div style={{ marginBottom: 16 }}>
+                            <label style={{ display: "inline-block", background: "var(--primary)", color: "white", padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>
+                              Upload Images
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                style={{ display: "none" }}
+                                onChange={e => {
+                                  const files = Array.from(e.target.files || []);
+                                  if (!files.length) return;
+                                  const folderId = folder.id;
+                                  Promise.all(files.map(file => new Promise(resolve => {
+                                    const reader = new FileReader();
+                                    reader.onload = ev => resolve({
+                                      id: Date.now() + Math.random(),
+                                      name: file.name,
+                                      dataUrl: ev.target.result
+                                    });
+                                    reader.readAsDataURL(file);
+                                  }))).then(newPhotos => {
+                                    setEventFolders(prev => prev.map(f => f.id === folderId ? {
+                                      ...f,
+                                      photos: [...f.photos, ...newPhotos]
+                                    } : f));
+                                  });
+                                  e.target.value = "";
+                                }}
+                              />
+                            </label>
+                            <span style={{ marginLeft: 12, color: "var(--muted)", fontSize: "0.85rem" }}>Select images from your device</span>
+                          </div>
+                        )}
+
+                        {folder.photos.length === 0 ? (
+                          <p style={{ textAlign: "center", color: "var(--muted)", padding: 30 }}>No photos in this folder yet</p>
+                        ) : (
+                          <div className="members-grid">
+                            {folder.photos.map(p => (
+                              <div key={p.id} className="member-card">
+                                <img src={p.dataUrl} alt={p.name} style={{ height: 160, objectFit: "cover" }} />
+                                <div className="info">
+                                  <div className="name" style={{ fontSize: "0.85rem" }}>{p.name}</div>
+                                  {isAdmin && (
+                                    <button className="danger" style={{ marginTop: 8 }} onClick={() => {
+                                      setEventFolders(prev => prev.map(f => f.id === folder.id ? {
+                                        ...f,
+                                        photos: f.photos.filter(ph => ph.id !== p.id)
+                                      } : f));
+                                    }}>Remove</button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+          )}
+
+          {tab === "access" && isAdmin && (
+            <div className="card">
+              <h3 style={{ marginBottom: 16 }}>Access Management</h3>
+              <p style={{ color: "var(--muted)", marginBottom: 16, fontSize: "0.9rem" }}>
+                Assign Admin or User access, set password, and upload photo for each member. Photos will appear in the Members Directory.
+              </p>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Site</th>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Phone</th>
+                    <th>Access</th>
+                    <th>Password</th>
+                    <th>Photo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {members.map(m => (
+                    <tr key={m.id}>
+                      <td><strong>{m.site}</strong></td>
+                      <td>{m.name}</td>
+                      <td><span className="badge-role">{m.role}</span></td>
+                      <td>{m.phone}</td>
+                      <td>
+                        <select
+                          value={m.access || "user"}
+                          onChange={e => {
+                            setMembers(members.map(mem => mem.id === m.id ? { ...mem, access: e.target.value } : mem));
+                          }}
+                          style={{ margin: 0, width: 120 }}
+                        >
+                          <option value="admin">Admin</option>
+                          <option value="user">User</option>
+                        </select>
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          placeholder="Set password"
+                          value={m.password || ""}
+                          onChange={e => {
+                            setMembers(members.map(mem => mem.id === m.id ? { ...mem, password: e.target.value } : mem));
+                          }}
+                          style={{ margin: 0, width: 140 }}
+                        />
+                      </td>
+                      <td>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          {m.photo && <img src={m.photo} alt="" style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover" }} />}
+                          <label style={{ cursor: "pointer", background: "var(--primary)", color: "white", padding: "4px 10px", borderRadius: 4, fontSize: "0.8rem" }}>
+                            Upload
+                            <input
+                              type="file"
+                              accept="image/*"
+                              style={{ display: "none" }}
+                              onChange={e => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const reader = new FileReader();
+                                reader.onload = ev => {
+                                  setMembers(members.map(mem => mem.id === m.id ? { ...mem, photo: ev.target.result } : mem));
+                                };
+                                reader.readAsDataURL(file);
+                              }}
+                            />
+                          </label>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {deleteConfirm && (
+            <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
+              <div className="modal" onClick={e => e.stopPropagation()}>
+                <h3>Confirm Delete</h3>
+                <p>
+                  {deleteConfirm.type === "sheet"
+                    ? "Enter password to delete this sheet."
+                    : "Enter password to delete this row."}
+                  <br /><small>(Leave blank for now — password check will be added later)</small>
+                </p>
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={deleteConfirm.password}
+                  onChange={e => setDeleteConfirm({ ...deleteConfirm, password: e.target.value })}
+                  autoFocus
+                />
+                <div className="modal-actions">
+                  <button className="secondary" onClick={() => setDeleteConfirm(null)}>Cancel</button>
+                  <button className="danger" onClick={confirmDelete}>Delete</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
