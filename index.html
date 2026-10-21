@@ -589,6 +589,18 @@
         }));
       };
 
+      const sortSheetBySite = (sheetId) => {
+        setSheets(sheets.map(s => {
+          if (s.id !== sheetId) return s;
+          const sorted = [...s.data].sort((a, b) => {
+            const na = parseInt(a.site) || 0;
+            const nb = parseInt(b.site) || 0;
+            return na - nb;
+          });
+          return { ...s, data: sorted };
+        }));
+      };
+
       const filteredMembers = useMemo(() => {
         if (!search.trim()) return members;
         const q = search.toLowerCase();
@@ -906,12 +918,13 @@
                   )}
 
                   {isAdmin && (
-                    <div style={{ marginBottom: 12, display: "flex", gap: 8, alignItems: "center" }}>
+                    <div style={{ marginBottom: 12, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                       {editingSheetId === activeSheet.id ? (
                         <button onClick={() => setEditingSheetId(null)}>Done Editing</button>
                       ) : (
                         <button onClick={() => setEditingSheetId(activeSheet.id)}>Edit Sheet</button>
                       )}
+                      <button className="secondary" onClick={() => sortSheetBySite(activeSheet.id)}>Sort by Site No</button>
                       <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
                         {editingSheetId === activeSheet.id ? "Editing mode on — click Done when finished" : "View mode"}
                       </span>
@@ -997,6 +1010,19 @@
                         );
                       })}
                     </tbody>
+                    <tfoot>
+                      <tr style={{ fontWeight: 700, background: "#f8fafc" }}>
+                        <td></td>
+                        <td></td>
+                        <td>Total</td>
+                        <td>{activeSheet.data.reduce((s, r) => s + (Number(r.paid) || 0), 0)}</td>
+                        <td>{activeSheet.data.reduce((s, r) => s + (Number(r.pending) || 0), 0)}</td>
+                        <td>{activeSheet.data.reduce((s, r) => s + (Number(r.overdue) || 0), 0)}</td>
+                        <td>₹{activeSheet.data.reduce((s, r) => s + (Number(r.collected) || 0), 0).toLocaleString()}</td>
+                        <td>₹{activeSheet.data.reduce((s, r) => s + (Number(r.due) || 0), 0).toLocaleString()}</td>
+                        {isAdmin && editingSheetId === activeSheet.id && <td></td>}
+                      </tr>
+                    </tfoot>
                   </table>
                   {isAdmin && editingSheetId === activeSheet.id && (
                     <div className="actions">
@@ -1219,12 +1245,18 @@
                     return (
                       <>
                         {isAdmin && (
-                          <div style={{ marginBottom: 12, display: "flex", gap: 8, alignItems: "center" }}>
+                          <div style={{ marginBottom: 12, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                             {isEditing ? (
                               <button onClick={() => setEditingEventSheetId(null)}>Done Editing</button>
                             ) : (
                               <button onClick={() => setEditingEventSheetId(sheet.id)}>Edit Sheet</button>
                             )}
+                            <button className="secondary" onClick={() => {
+                              setEventSheets(eventSheets.map(es => es.id === sheet.id ? {
+                                ...es,
+                                data: [...es.data].sort((a, b) => (parseInt(a.site) || 0) - (parseInt(b.site) || 0))
+                              } : es));
+                            }}>Sort by Site No</button>
                             <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
                               {isEditing ? "Editing mode — update collected funds" : "View mode"}
                             </span>
@@ -1263,6 +1295,15 @@
                               </tr>
                             ))}
                           </tbody>
+                          <tfoot>
+                            <tr style={{ fontWeight: 700, background: "#f8fafc" }}>
+                              <td></td>
+                              <td></td>
+                              <td>Total</td>
+                              <td>₹{sheet.data.reduce((s, r) => s + (Number(r.amount) || 0), 0).toLocaleString()}</td>
+                              {isEditing && <td></td>}
+                            </tr>
+                          </tfoot>
                         </table>
                         {isEditing && (
                           <div className="actions">
