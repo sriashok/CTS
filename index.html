@@ -40,6 +40,7 @@
       text-align: center;
       margin-bottom: 20px;
       position: relative;
+      border: 2px solid rgba(255,255,255,0.5);
     }
     .header-logo {
       position: absolute;
@@ -63,7 +64,11 @@
       height: 100%;
       object-fit: cover;
     }
-    .header-text { text-align: center; }
+    .header-text {
+      text-align: center;
+      padding: 8px 16px;
+      display: inline-block;
+    }
     header h1 { font-size: 1.3rem; font-weight: 600; line-height: 1.3; margin: 0; }
     header .kannada { font-size: 1rem; margin-top: 4px; opacity: 0.95; font-weight: 700; }
     header .address { font-size: 0.75rem; opacity: 0.8; margin-top: 6px; }
@@ -312,6 +317,7 @@
 
     const TOWNSHIP_NAME = "Chamundi Township Welfare & Development Association";
     const APPS_SCRIPT_URL = ""; // Paste your Google Apps Script Web App URL here
+    const GEMINI_API_KEY = "AQ.Ab8RN6LJ8sWFqBb-af2GuZJ42lgvfxuyrHMROcrEtPi2aHm0ig";
 
     async function apiGet(action) {
       if (!APPS_SCRIPT_URL) return null;
@@ -424,9 +430,23 @@
         if (!APPS_SCRIPT_URL || loading) return;
         apiPost("saveMembers", { rows: members });
       }, [members]);
+
+      useEffect(() => {
+        if (!activeYearId) return;
+        setPaymentYears(prev => prev.map(y => y.id === activeYearId ? { ...y, sheets } : y));
+      }, [sheets]);
       const [dues, setDues] = useState(MOCK_DUES);
       const [sheets, setSheets] = useState(INITIAL_SHEETS);
       const [activeSheetId, setActiveSheetId] = useState(1);
+      const [paymentYears, setPaymentYears] = useState([
+        { id: 1, name: "2025-2026", sheets: INITIAL_SHEETS },
+        { id: 2, name: "2026-2027", sheets: [] },
+        { id: 3, name: "2027-2028", sheets: [] },
+        { id: 4, name: "2028-2029", sheets: [] },
+        { id: 5, name: "2029-2030", sheets: [] },
+      ]);
+      const [activeYearId, setActiveYearId] = useState(null);
+      const [newYearName, setNewYearName] = useState("");
       const [showAddMember, setShowAddMember] = useState(false);
       const [newMember, setNewMember] = useState({ site: "", name: "", phone: "", email: "", role: "Member", photo: "" });
       const [selectedFlat, setSelectedFlat] = useState("all");
@@ -458,7 +478,17 @@
       const [showAddFolder, setShowAddFolder] = useState(false);
       const [eventsSubTab, setEventsSubTab] = useState("collections");
       const [editingEventSheetId, setEditingEventSheetId] = useState(null);
-      const [documents, setDocuments] = useState([]);
+      const [docFolders, setDocFolders] = useState([
+        { id: 1, name: "Bank Documents", docs: [] },
+        { id: 2, name: "Letters Sent", docs: [] },
+        { id: 3, name: "Meeting Minutes", docs: [] },
+      ]);
+      const [activeDocFolderId, setActiveDocFolderId] = useState(null);
+      const [newDocFolderName, setNewDocFolderName] = useState("");
+      const [aiMessages, setAiMessages] = useState([
+        { role: "assistant", content: "Hi! I can help you manage the portal. Ask me to add members, update payments, create folders, or explain features." }
+      ]);
+      const [aiInput, setAiInput] = useState("");
 
       const isAdmin = role === "admin";
 
@@ -630,6 +660,31 @@
         );
       }
 
+      const sendAiMessage = async () => {
+        if (!aiInput.trim()) return;
+        const userMsg = aiInput.trim();
+        setAiMessages(prev => [...prev, { role: "user", content: userMsg }]);
+        setAiInput("");
+        if (!GEMINI_API_KEY) {
+          setAiMessages(prev => [...prev, { role: "assistant", content: "Please add your Gemini API key in the code (GEMINI_API_KEY). Get a free key from aistudio.google.com" }]);
+          return;
+        }
+        try {
+          const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: `You are an assistant for the Chamundi Township portal. Help the admin manage members, payments, events, and documents. Be concise.\n\nUser: ${userMsg}` }] }]
+            })
+          });
+          const data = await res.json();
+          const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't get a response.";
+          setAiMessages(prev => [...prev, { role: "assistant", content: reply }]);
+        } catch (err) {
+          setAiMessages(prev => [...prev, { role: "assistant", content: "Error connecting to Gemini. Check your API key." }]);
+        }
+      };
+
       const handleLogin = () => {
         setLoginError("");
         if (loginSite.toLowerCase() === "admin" && loginPassword === "Admin@123") {
@@ -704,13 +759,13 @@
             <div className={`tab ${tab === "directory" ? "active" : ""}`} onClick={() => setTab("directory")}>
               Members Directory
             </div>
-            <div className={`tab ${tab === "payments" ? "active" : ""}`} onClick={() => setTab("payments")}>
-              Consolidated Payments
+            <div className={`tab ${tab === "payments" ? "active" : ""}`} onClick={() => { setTab("payments"); setActiveYearId(null); }}>
+              Payments
             </div>
             <div className={`tab ${tab === "dues" ? "active" : ""}`} onClick={() => setTab("dues")}>
               {isAdmin ? "Dues & History" : "My Dues & History"}
             </div>
-            <div className={`tab ${tab === "documents" ? "active" : ""}`} onClick={() => setTab("documents")}>
+            <div className={`tab ${tab === "documents" ? "active" : ""}`} onClick={() => { setTab("documents"); setActiveDocFolderId(null); }}>
               Documents
             </div>
             <div className={`tab ${tab === "events" ? "active" : ""}`} onClick={() => setTab("events")}>
@@ -719,6 +774,11 @@
             {isAdmin && (
               <div className={`tab ${tab === "access" ? "active" : ""}`} onClick={() => setTab("access")}>
                 Access Management
+              </div>
+            )}
+            {isAdmin && (
+              <div className={`tab ${tab === "ai" ? "active" : ""}`} onClick={() => setTab("ai")}>
+                AI
               </div>
             )}
           </div>
@@ -850,20 +910,84 @@
 
           {tab === "payments" && (
             <div className="card">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
-                <h3>Consolidated Payments</h3>
-                {isAdmin && (
-                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <input
-                      placeholder="New sheet name"
-                      value={newSheetName}
-                      onChange={e => setNewSheetName(e.target.value)}
-                      style={{ width: 180, marginBottom: 0 }}
-                    />
-                    <button onClick={addSheet}>+ Add Sheet</button>
+              {!activeYearId ? (
+                <>
+                  <div style={{ textAlign: "center", marginBottom: 20 }}>
+                    <h3>Payments</h3>
+                    <p style={{ color: "var(--muted)", marginTop: 4 }}>Select a year folder</p>
                   </div>
-                )}
-              </div>
+                  {isAdmin && (
+                    <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 20 }}>
+                      <input
+                        placeholder="Year (e.g. 2030-2031)"
+                        value={newYearName}
+                        onChange={e => setNewYearName(e.target.value)}
+                        style={{ width: 200, marginBottom: 0 }}
+                      />
+                      <button onClick={() => {
+                        if (!newYearName.trim()) return;
+                        setPaymentYears([...paymentYears, { id: Date.now(), name: newYearName.trim(), sheets: [] }]);
+                        setNewYearName("");
+                      }}>+ Add Year</button>
+                    </div>
+                  )}
+                  <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
+                    {paymentYears.map(y => (
+                      <div
+                        key={y.id}
+                        onClick={() => {
+                          setActiveYearId(y.id);
+                          setSheets(y.sheets.length ? y.sheets : INITIAL_SHEETS.map(s => ({ ...s, data: s.data.map(r => ({ ...r })) })));
+                          setActiveSheetId(1);
+                        }}
+                        style={{
+                          width: 160,
+                          height: 120,
+                          background: "white",
+                          border: "2px solid var(--primary)",
+                          borderRadius: 12,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.08)"
+                        }}
+                      >
+                        <div style={{ fontSize: "2rem" }}>📁</div>
+                        {isAdmin ? (
+                          <input
+                            value={y.name}
+                            onClick={e => e.stopPropagation()}
+                            onChange={e => setPaymentYears(paymentYears.map(py => py.id === y.id ? { ...py, name: e.target.value } : py))}
+                            style={{ textAlign: "center", fontWeight: 600, border: "none", background: "transparent", margin: 0, width: 140 }}
+                          />
+                        ) : (
+                          <div style={{ fontWeight: 600 }}>{y.name}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <button className="secondary" onClick={() => setActiveYearId(null)}>← Back</button>
+                      <h3>{paymentYears.find(y => y.id === activeYearId)?.name}</h3>
+                    </div>
+                    {isAdmin && (
+                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <input
+                          placeholder="New sheet name"
+                          value={newSheetName}
+                          onChange={e => setNewSheetName(e.target.value)}
+                          style={{ width: 180, marginBottom: 0 }}
+                        />
+                        <button onClick={addSheet}>+ Add Sheet</button>
+                      </div>
+                    )}
+                  </div>
 
               <div className="sheet-tabs">
                 {sheets.map((s, index) => (
@@ -1037,6 +1161,8 @@
                   ? "Admin: Click “Edit Sheet” to modify data, add/delete rows. Click “Done Editing” when finished. You can also shuffle, rename, and delete sheets."
                   : "View only. Contact Admin to make changes to payment sheets."}
               </div>
+                </>
+              )}
             </div>
           )}
 
@@ -1107,77 +1233,152 @@
 
           {tab === "documents" && (
             <div className="card">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <h3>Documents</h3>
-                {isAdmin && (
-                  <label style={{ background: "var(--primary)", color: "white", padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>
-                    Upload Document
-                    <input
-                      type="file"
-                      accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
-                      multiple
-                      style={{ display: "none" }}
-                      onChange={e => {
-                        const files = Array.from(e.target.files || []);
-                        files.forEach(file => {
-                          const reader = new FileReader();
-                          reader.onload = ev => {
-                            setDocuments(prev => [...prev, {
-                              id: Date.now() + Math.random(),
-                              name: file.name,
-                              type: file.type,
-                              dataUrl: ev.target.result,
-                              uploadedOn: new Date().toLocaleDateString()
-                            }]);
-                          };
-                          reader.readAsDataURL(file);
-                        });
-                        e.target.value = "";
-                      }}
-                    />
-                  </label>
-                )}
-              </div>
-
-              {documents.length === 0 ? (
-                <p style={{ textAlign: "center", color: "var(--muted)", padding: 40 }}>No documents uploaded yet</p>
-              ) : (
-                <table>
-                  <thead>
-                    <tr>
-                      <th>S.No</th>
-                      <th>Document Name</th>
-                      <th>Uploaded On</th>
-                      <th>Action</th>
-                      {isAdmin && <th></th>}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {documents.map((doc, idx) => (
-                      <tr key={doc.id}>
-                        <td>{idx + 1}</td>
-                        <td>{doc.name}</td>
-                        <td>{doc.uploadedOn}</td>
-                        <td>
-                          <a href={doc.dataUrl} download={doc.name} style={{ color: "var(--primary)", textDecoration: "underline" }}>
-                            Download
-                          </a>
-                        </td>
-                        {isAdmin && (
-                          <td>
-                            <button className="danger" onClick={() => setDocuments(documents.filter(d => d.id !== doc.id))}>×</button>
-                          </td>
+              {!activeDocFolderId ? (
+                <>
+                  <div style={{ textAlign: "center", marginBottom: 20 }}>
+                    <h3>Documents</h3>
+                    <p style={{ color: "var(--muted)", marginTop: 4 }}>Select a folder</p>
+                  </div>
+                  {isAdmin && (
+                    <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 20 }}>
+                      <input
+                        placeholder="New folder name"
+                        value={newDocFolderName}
+                        onChange={e => setNewDocFolderName(e.target.value)}
+                        style={{ width: 200, marginBottom: 0 }}
+                      />
+                      <button onClick={() => {
+                        if (!newDocFolderName.trim()) return;
+                        setDocFolders([...docFolders, { id: Date.now(), name: newDocFolderName.trim(), docs: [] }]);
+                        setNewDocFolderName("");
+                      }}>+ Add Folder</button>
+                    </div>
+                  )}
+                  <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
+                    {docFolders.map(f => (
+                      <div
+                        key={f.id}
+                        onClick={() => setActiveDocFolderId(f.id)}
+                        style={{
+                          width: 160,
+                          height: 120,
+                          background: "white",
+                          border: "2px solid var(--primary)",
+                          borderRadius: 12,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer",
+                          boxShadow: "0 2px 6px rgba(0,0,0,0.08)"
+                        }}
+                      >
+                        <div style={{ fontSize: "2rem" }}>📁</div>
+                        {isAdmin ? (
+                          <input
+                            value={f.name}
+                            onClick={e => e.stopPropagation()}
+                            onChange={e => setDocFolders(docFolders.map(df => df.id === f.id ? { ...df, name: e.target.value } : df))}
+                            style={{ textAlign: "center", fontWeight: 600, border: "none", background: "transparent", margin: 0, width: 140 }}
+                          />
+                        ) : (
+                          <div style={{ fontWeight: 600 }}>{f.name}</div>
                         )}
-                      </tr>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
+                  </div>
+                </>
+              ) : (
+                (() => {
+                  const folder = docFolders.find(f => f.id === activeDocFolderId);
+                  if (!folder) return null;
+                  return (
+                    <>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <button className="secondary" onClick={() => setActiveDocFolderId(null)}>← Back</button>
+                          <h3>{folder.name}</h3>
+                        </div>
+                        {isAdmin && (
+                          <label style={{ background: "var(--primary)", color: "white", padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>
+                            Upload Document
+                            <input
+                              type="file"
+                              accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                              multiple
+                              style={{ display: "none" }}
+                              onChange={e => {
+                                const files = Array.from(e.target.files || []);
+                                files.forEach(file => {
+                                  const reader = new FileReader();
+                                  reader.onload = ev => {
+                                    setDocFolders(prev => prev.map(f => f.id === folder.id ? {
+                                      ...f,
+                                      docs: [...f.docs, {
+                                        id: Date.now() + Math.random(),
+                                        name: file.name,
+                                        dataUrl: ev.target.result,
+                                        uploadedOn: new Date().toLocaleDateString()
+                                      }]
+                                    } : f));
+                                  };
+                                  reader.readAsDataURL(file);
+                                });
+                                e.target.value = "";
+                              }}
+                            />
+                          </label>
+                        )}
+                      </div>
+
+                      {folder.docs.length === 0 ? (
+                        <p style={{ textAlign: "center", color: "var(--muted)", padding: 40 }}>No documents in this folder</p>
+                      ) : (
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>S.No</th>
+                              <th>Document Name</th>
+                              <th>Uploaded On</th>
+                              <th>Action</th>
+                              {isAdmin && <th></th>}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {folder.docs.map((doc, idx) => (
+                              <tr key={doc.id}>
+                                <td>{idx + 1}</td>
+                                <td>{doc.name}</td>
+                                <td>{doc.uploadedOn}</td>
+                                <td>
+                                  <a href={doc.dataUrl} download={doc.name} style={{ color: "var(--primary)", textDecoration: "underline" }}>
+                                    Download
+                                  </a>
+                                </td>
+                                {isAdmin && (
+                                  <td>
+                                    <button className="danger" onClick={() => {
+                                      setDocFolders(prev => prev.map(f => f.id === folder.id ? {
+                                        ...f,
+                                        docs: f.docs.filter(d => d.id !== doc.id)
+                                      } : f));
+                                    }}>×</button>
+                                  </td>
+                                )}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      )}
+                    </>
+                  );
+                })()
               )}
 
               <div className="note" style={{ marginTop: 16 }}>
                 {isAdmin
-                  ? "Admin can upload PDFs, Excel, Word, and images. Members can view and download."
-                  : "Documents uploaded by Admin. Click Download to save a file."}
+                  ? "Admin can create folders, rename them, and upload documents. Members can view and download."
+                  : "Select a folder to view documents."}
               </div>
             </div>
           )}
@@ -1516,6 +1717,48 @@
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {tab === "ai" && isAdmin && (
+            <div className="card">
+              <h3 style={{ marginBottom: 8 }}>AI Assistant</h3>
+              <p style={{ color: "var(--muted)", marginBottom: 16, fontSize: "0.9rem" }}>
+                Ask the AI to help manage members, payments, events, or documents. (Demo mode — connect a free API key for full responses)
+              </p>
+              <div style={{ background: "#f8fafc", borderRadius: 8, padding: 16, height: 320, overflowY: "auto", marginBottom: 12 }}>
+                {aiMessages.map((msg, i) => (
+                  <div key={i} style={{
+                    marginBottom: 10,
+                    textAlign: msg.role === "user" ? "right" : "left"
+                  }}>
+                    <div style={{
+                      display: "inline-block",
+                      background: msg.role === "user" ? "var(--primary)" : "white",
+                      color: msg.role === "user" ? "white" : "var(--text)",
+                      padding: "8px 12px",
+                      borderRadius: 8,
+                      maxWidth: "80%",
+                      border: msg.role === "assistant" ? "1px solid var(--border)" : "none"
+                    }}>
+                      {msg.content}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <input
+                  placeholder="Ask something... (e.g. Add a member, show how to sort payments)"
+                  value={aiInput}
+                  onChange={e => setAiInput(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && sendAiMessage()}
+                  style={{ flex: 1, marginBottom: 0 }}
+                />
+                <button onClick={sendAiMessage}>Send</button>
+              </div>
+              <div className="note" style={{ marginTop: 12 }}>
+                Get a free Gemini API key from <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">aistudio.google.com</a> and paste it in the code as GEMINI_API_KEY.
+              </div>
             </div>
           )}
 
