@@ -317,7 +317,7 @@
 
     const TOWNSHIP_NAME = "Chamundi Township Welfare & Development Association";
     const APPS_SCRIPT_URL = ""; // Paste your Google Apps Script Web App URL here
-    const GEMINI_API_KEY = "AQ.Ab8RN6LJ8sWFqBb-af2GuZJ42lgvfxuyrHMROcrEtPi2aHm0ig";
+    const GEMINI_API_KEY = "AQ.Ab8RN6KvTAic-SXt8_KyWdsTnNWpBObQMH5Qhbyvs1yhlBiLSQ";
 
     async function apiGet(action) {
       if (!APPS_SCRIPT_URL) return null;
@@ -678,10 +678,14 @@
             })
           });
           const data = await res.json();
+          if (data.error) {
+            setAiMessages(prev => [...prev, { role: "assistant", content: "API Error: " + (data.error.message || JSON.stringify(data.error)) }]);
+            return;
+          }
           const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't get a response.";
           setAiMessages(prev => [...prev, { role: "assistant", content: reply }]);
         } catch (err) {
-          setAiMessages(prev => [...prev, { role: "assistant", content: "Error connecting to Gemini. Check your API key." }]);
+          setAiMessages(prev => [...prev, { role: "assistant", content: "Connection error: " + err.message + ". Browser may be blocking the request (CORS). Try opening the site in a new tab or use a proxy." }]);
         }
       };
 
