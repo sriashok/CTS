@@ -400,6 +400,7 @@
       {
         id: 1,
         name: "Oct 2026 Summary",
+        openingBalance: 0,
         data: ALL_MEMBERS_FOR_SHEETS
       }
     ];
@@ -457,6 +458,7 @@
       const [showAddFolder, setShowAddFolder] = useState(false);
       const [eventsSubTab, setEventsSubTab] = useState("collections");
       const [editingEventSheetId, setEditingEventSheetId] = useState(null);
+      const [documents, setDocuments] = useState([]);
 
       const isAdmin = role === "admin";
 
@@ -501,6 +503,7 @@
         const newSheet = {
           id: Date.now(),
           name: newSheetName.trim(),
+          openingBalance: 0,
           data: ALL_MEMBERS_FOR_SHEETS.map(m => ({ ...m }))
         };
         setSheets([...sheets, newSheet]);
@@ -514,6 +517,7 @@
         const newSheet = {
           id: Date.now(),
           name: source.name + " (Copy)",
+          openingBalance: source.openingBalance || 0,
           data: source.data.map(row => ({ ...row }))
         };
         setSheets([...sheets, newSheet]);
@@ -693,6 +697,9 @@
             </div>
             <div className={`tab ${tab === "dues" ? "active" : ""}`} onClick={() => setTab("dues")}>
               {isAdmin ? "Dues & History" : "My Dues & History"}
+            </div>
+            <div className={`tab ${tab === "documents" ? "active" : ""}`} onClick={() => setTab("documents")}>
+              Documents
             </div>
             <div className={`tab ${tab === "events" ? "active" : ""}`} onClick={() => setTab("events")}>
               Events
@@ -911,6 +918,20 @@
                     </div>
                   )}
 
+                  <div style={{ background: "#f8fafc", padding: "12px 16px", borderRadius: 8, marginBottom: 12, display: "flex", alignItems: "center", gap: 12 }}>
+                    <strong>Opening Balance:</strong>
+                    {isAdmin && editingSheetId === activeSheet.id ? (
+                      <input
+                        type="number"
+                        value={activeSheet.openingBalance || 0}
+                        onChange={e => setSheets(sheets.map(s => s.id === activeSheet.id ? { ...s, openingBalance: Number(e.target.value) || 0 } : s))}
+                        style={{ width: 140, margin: 0 }}
+                      />
+                    ) : (
+                      <span style={{ fontWeight: 700, fontSize: "1.1rem" }}>₹{(activeSheet.openingBalance || 0).toLocaleString()}</span>
+                    )}
+                  </div>
+
                   <table className="consolidated-table">
                     <thead>
                       <tr>
@@ -1056,6 +1077,83 @@
                 <strong>WhatsApp Reminder:</strong> Clicking the WhatsApp button opens WhatsApp with a pre-filled soft reminder or payment confirmation message.
               </div>
             </>
+          )}
+
+          {tab === "documents" && (
+            <div className="card">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <h3>Documents</h3>
+                {isAdmin && (
+                  <label style={{ background: "var(--primary)", color: "white", padding: "8px 16px", borderRadius: 6, cursor: "pointer" }}>
+                    Upload Document
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                      multiple
+                      style={{ display: "none" }}
+                      onChange={e => {
+                        const files = Array.from(e.target.files || []);
+                        files.forEach(file => {
+                          const reader = new FileReader();
+                          reader.onload = ev => {
+                            setDocuments(prev => [...prev, {
+                              id: Date.now() + Math.random(),
+                              name: file.name,
+                              type: file.type,
+                              dataUrl: ev.target.result,
+                              uploadedOn: new Date().toLocaleDateString()
+                            }]);
+                          };
+                          reader.readAsDataURL(file);
+                        });
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
+
+              {documents.length === 0 ? (
+                <p style={{ textAlign: "center", color: "var(--muted)", padding: 40 }}>No documents uploaded yet</p>
+              ) : (
+                <table>
+                  <thead>
+                    <tr>
+                      <th>S.No</th>
+                      <th>Document Name</th>
+                      <th>Uploaded On</th>
+                      <th>Action</th>
+                      {isAdmin && <th></th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {documents.map((doc, idx) => (
+                      <tr key={doc.id}>
+                        <td>{idx + 1}</td>
+                        <td>{doc.name}</td>
+                        <td>{doc.uploadedOn}</td>
+                        <td>
+                          <a href={doc.dataUrl} download={doc.name} style={{ color: "var(--primary)", textDecoration: "underline" }}>
+                            Download
+                          </a>
+                        </td>
+                        {isAdmin && (
+                          <td>
+                            <button className="danger" onClick={() => setDocuments(documents.filter(d => d.id !== doc.id))}>×</button>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+
+              <div className="note" style={{ marginTop: 16 }}>
+                {isAdmin
+                  ? "Admin can upload PDFs, Excel, Word, and images. Members can view and download."
+                  : "Documents uploaded by Admin. Click Download to save a file."}
+              </div>
+            </div>
           )}
 
           {tab === "events" && (
